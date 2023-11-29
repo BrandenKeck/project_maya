@@ -15,7 +15,7 @@ class Base(DeclarativeBase):
     pass
 
 # Bets Class - TODO
-class BetData(Base):
+class Bets(Base):
 
     __tablename__ = "bets"
     idx: Mapped[int] = mapped_column(primary_key=True)
@@ -23,96 +23,11 @@ class BetData(Base):
     def __repr__(self):
         return f"BetData({self.idx})"
 
-# Team Class
-class TeamData(Base):
-
-    __tablename__ = "teams"
-    idx: Mapped[int] = mapped_column(primary_key=True)
-    team_id: Mapped[str] = mapped_column(String())
-    team_name: Mapped[str] = mapped_column(String())
-    game_id: Mapped[str] = mapped_column(String())
-    date: Mapped[str] = mapped_column(String())
-    is_home: Mapped[int] = mapped_column(Numeric())
-    skater_goals_toi: Mapped[float] = mapped_column(Numeric())
-    skater_assists_toi: Mapped[float] = mapped_column(Numeric())
-    skater_shots_toi: Mapped[float] = mapped_column(Numeric())
-    skater_blocks_toi: Mapped[float] = mapped_column(Numeric())
-    skater_hits_toi: Mapped[float] = mapped_column(Numeric())
-    skater_takeaways_toi: Mapped[float] = mapped_column(Numeric())
-    skater_giveaways_toi: Mapped[float] = mapped_column(Numeric())
-    defenseman_blocks_toi: Mapped[float] = mapped_column(Numeric())
-    defenseman_hits_toi: Mapped[float] = mapped_column(Numeric())
-    goaltender_shots_against_toi: Mapped[float] = mapped_column(Numeric())
-    goaltender_goals_against_toi: Mapped[float] = mapped_column(Numeric())
-    goaltender_save_percentage_toi: Mapped[float] = mapped_column(Numeric())
-    record_id: Mapped[str] = mapped_column(String())
-
-    def __repr__(self):
-        return f"TeamData(team={self.team_name}, game={self.game_id})"
-
-# Skater Class
-class SkaterData(Base):
-
-    __tablename__ = "skaters"
-    idx: Mapped[int] = mapped_column(primary_key=True)
-    skater_id: Mapped[str] = mapped_column(String())
-    skater_name: Mapped[str] = mapped_column(String())
-    team_id: Mapped[str] = mapped_column(String())
-    opp_id: Mapped[str] = mapped_column(String())
-    game_id: Mapped[str] = mapped_column(String())
-    date: Mapped[str] = mapped_column(String())
-    is_home: Mapped[int] = mapped_column(Numeric())
-    toi: Mapped[float] = mapped_column(Numeric())
-    goals: Mapped[int] = mapped_column(Numeric())
-    assists: Mapped[int] = mapped_column(Numeric())
-    shots: Mapped[int] = mapped_column(Numeric())
-    blocks: Mapped[int] = mapped_column(Numeric())
-    hits: Mapped[int] = mapped_column(Numeric())
-    takeaways: Mapped[int] = mapped_column(Numeric())
-    giveaways: Mapped[int] = mapped_column(Numeric())
-    goals_toi: Mapped[float] = mapped_column(Numeric())
-    assists_toi: Mapped[float] = mapped_column(Numeric())
-    shots_toi: Mapped[float] = mapped_column(Numeric())
-    blocks_toi: Mapped[float] = mapped_column(Numeric())
-    hits_toi: Mapped[float] = mapped_column(Numeric())
-    takeaways_toi: Mapped[float] = mapped_column(Numeric())
-    giveaways_toi: Mapped[float] = mapped_column(Numeric())
-    record_id: Mapped[str] = mapped_column(String())
-
-    def __repr__(self):
-        return f"SkaterData(skater={self.skater_name}, game={self.game_id})"
-
-
-# Goaltender Class
-class GoaltenderData(Base):
-
-    __tablename__ = "goaltenders"
-    idx: Mapped[int] = mapped_column(primary_key=True)
-    goaltender_id: Mapped[str] = mapped_column(String())
-    goaltender_name: Mapped[str] = mapped_column(String())
-    team_id: Mapped[str] = mapped_column(String())
-    opp_id: Mapped[str] = mapped_column(String())
-    game_id: Mapped[str] = mapped_column(String())
-    date: Mapped[str] = mapped_column(String())
-    is_home: Mapped[int] = mapped_column(Numeric())
-    toi: Mapped[float] = mapped_column(Numeric())
-    saves: Mapped[int] = mapped_column(Numeric())
-    shots_against: Mapped[int] = mapped_column(Numeric())
-    goals_against: Mapped[int] = mapped_column(Numeric())
-    save_percentage: Mapped[float] = mapped_column(Numeric())
-    shots_against_toi: Mapped[float] = mapped_column(Numeric())
-    goals_against_toi: Mapped[float] = mapped_column(Numeric())
-    save_percentage_toi: Mapped[float] = mapped_column(Numeric())
-    record_id: Mapped[str] = mapped_column(String())
-
-    def __repr__(self):
-        return f"GoaltenderData(skater={self.goaltender_name}, game={self.game_id})"
-
 class LakshmiDatabase():
 
     def __init__(self):
         self.ppq = Query()
-        self.ppdb = TinyDB("data/preprocessed.json")
+        self.ppdb = TinyDB("data/data.json")
         self.engine = create_engine("sqlite:///data/data.db")
         self.session = Session(self.engine)
         self.connection = self.engine.raw_connection()
