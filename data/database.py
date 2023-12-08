@@ -27,8 +27,8 @@ class LakshmiDatabase():
 
     def __init__(self):
         self.ppq = Query()
-        self.ppdb = TinyDB("data/data.json")
-        self.engine = create_engine("sqlite:///data/data.db")
+        self.ppdb = TinyDB("data/preproc_data.json")
+        self.engine = create_engine("sqlite:///data/bets.db")
         self.session = Session(self.engine)
         self.connection = self.engine.raw_connection()
         
@@ -56,84 +56,6 @@ class LakshmiDatabase():
         for goaltender in goaltenders: self.add_goaltender_data(goaltender)
         self.session.commit()
     
-    def add_team_data(self, data):
-        exists = bool(self.session.query(TeamData).filter_by(record_id=data["record_id"]).first())
-        if not exists:
-            team = TeamData(
-                team_id=data["team_id"],
-                team_name=data["team_name"],
-                game_id=data["game_id"],
-                date=data["date"],
-                is_home=data["is_home"],
-                skater_goals_toi=data["skater_goals_toi"],
-                skater_assists_toi=data["skater_assists_toi"],
-                skater_shots_toi=data["skater_shots_toi"],
-                skater_blocks_toi=data["skater_blocks_toi"],
-                skater_hits_toi=data["skater_hits_toi"],
-                skater_takeaways_toi=data["skater_takeaways_toi"],
-                skater_giveaways_toi=data["skater_giveaways_toi"],
-                defenseman_blocks_toi=data["defenseman_blocks_toi"],
-                defenseman_hits_toi=data["defenseman_hits_toi"],
-                goaltender_shots_against_toi=data["goaltender_shots_against_toi"],
-                goaltender_goals_against_toi=data["goaltender_goals_against_toi"],
-                goaltender_save_percentage_toi=data["goaltender_save_percentage_toi"],
-                record_id=data["record_id"]
-            )
-            self.session.add(team)
-
-    def add_skater_data(self, data):
-        exists = bool(self.session.query(SkaterData).filter_by(record_id=data["record_id"]).first())
-        if not exists:
-            sk8r = SkaterData(
-                skater_id=data["skater_id"],
-                skater_name=data["skater_name"],
-                team_id=data["team_id"],
-                opp_id=data["opp_id"],
-                game_id=data["game_id"],
-                date=data["date"],
-                is_home=data["is_home"],
-                toi=data["toi"],
-                goals=data["goals"],
-                assists=data["assists"],
-                shots=data["shots"],
-                blocks=data["blocks"],
-                hits=data["hits"],
-                takeaways=data["takeaways"],
-                giveaways=data["giveaways"],
-                goals_toi=data["goals_toi"],
-                assists_toi=data["assists_toi"],
-                shots_toi=data["shots_toi"],
-                blocks_toi=data["blocks_toi"],
-                hits_toi=data["hits_toi"],
-                takeaways_toi=data["takeaways_toi"],
-                giveaways_toi=data["giveaways_toi"],
-                record_id=data["record_id"]
-            )
-            self.session.add(sk8r)
-
-    def add_goaltender_data(self, data):
-        exists = bool(self.session.query(GoaltenderData).filter_by(record_id=data["record_id"]).first())
-        if not exists:
-            gt = GoaltenderData(
-                goaltender_id=data["goaltender_id"],
-                goaltender_name=data["goaltender_name"],
-                team_id=data["team_id"],
-                opp_id=data["opp_id"],
-                game_id=data["game_id"],
-                date=data["date"],
-                is_home=data["is_home"],
-                toi=data["toi"],
-                saves=data["saves"],
-                shots_against=data["shots_against"],
-                goals_against=data["goals_against"],
-                save_percentage=data["save_percentage"],
-                shots_against_toi=data["shots_against_toi"],
-                goals_against_toi=data["goals_against_toi"],
-                save_percentage_toi=data["save_percentage_toi"],
-                record_id=data["record_id"]
-            )
-            self.session.add(gt)
-
     def preprocess_data(self, skater_id=8471675):
 
         # Skater Games List:

@@ -1,4 +1,4 @@
-import requests
+import json, requests
 import pandas as pd
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
@@ -12,6 +12,8 @@ class DataManagement():
     def __init__(self):
         self.driver = self.get_driver()
         self.driver.implicitly_wait(10)
+        with open('data/links.json', 'r') as f:
+            self.links = json.load(f)
 
     def get_driver(self):
         # Driver options
@@ -54,14 +56,16 @@ class DataManagement():
             [2, "", 4, 1], [2, "", 4, 2],
         ]
         for path in d_paths:
-            try: sk8r = self.driver.find_element("xpath", f"//section[@id='line_combos']/div[{path[0]}]/{path[1]}div[{path[2]}]/div[{path[3]}]/div/div[2]/a/span").text
+            try: sk8r = self.driver.find_element("xpath", 
+                    f"//section[@id='line_combos']/div[{path[0]}]/{path[1]}div[{path[2]}]/div[{path[3]}]/div/div[2]/a/span").text
             except: sk8r = "Not Found"
             d.append(sk8r)
 
         # Get Goaltenders
         g = []
         for num in [1,2]:
-            try: g0ly = self.driver.find_element("xpath", f"//section[@id='line_combos']/div[9]/div[2]/div[{num}]/div/div[2]/a/span").text
+            try: g0ly = self.driver.find_element("xpath", 
+                    f"//section[@id='line_combos']/div[9]/div[2]/div[{num}]/div/div[2]/a/span").text
             except: g0ly = "Not Found"
             g.append(g0ly)
         
@@ -69,7 +73,9 @@ class DataManagement():
         return {"F": f, "D": d, "G": g}
 
     # Fetch Data
-    def fetch_data(self, player, position):
+    def fetch_data(self, player, team, position):
+
+        # Part 1: Get the site and search on player
         self.driver.get(f"https://www.hockey-reference.com/")
         searchbar = self.driver.find_element("xpath", 
             f"//div[@id='header']/div[@class='search']/form/div/div"
@@ -79,6 +85,18 @@ class DataManagement():
         actions.send_keys(player.title())
         actions.send_keys(Keys.RETURN)
         actions.perform()
+
+        # Part 2: Error check players with the same name
+        if self.driver.current_url.split("/")[3]=="search":
+            if player in self.links:
+                player_num = self.links[player][team]
+                correct_skater = self.driver.find_element("xpath", 
+                    f"//div[@id='searches']/div[@id='players']/div[{player_num}]/div/a")
+                correct_skater.click()
+            else:
+                return f"{player} Not Found" 
+
+        # Part 3: Extract table of last 5 games
         htmlsource=self.driver.find_element("xpath", 
             f"//div[@id='div_last5']/table"
         )
@@ -86,21 +104,38 @@ class DataManagement():
         table.columns = [ii[1] for ii in table.columns.tolist()]
         table["Name"] = player.title()
         table["Position"] = position
+        table["TOI"] = table.apply(lambda x: self.toi_to_minutes(x["TOI"]), axis=1)
         if position is not "G":
+            table["G_TOI"] = table.apply(lambda x: x["G"]/x["TOI"], axis=1)
+            table["A_TOI"] = table.apply(lambda x: x["A"]/x["TOI"], axis=1)
+            table["SOG_TOI"] = table.apply(lambda x: x["SOG"]/x["TOI"], axis=1)
+            table["BLK_TOI"] = table.apply(lambda x: x["BLK"]/x["TOI"], axis=1)
+            table["HIT_TOI"] = table.apply(lambda x: x["HIT"]/x["TOI"], axis=1)
             table["GA"] = None
             table["SV"] = None
             table["SV%"] = None
+            table["GA_TOI"] = None
+            table["SV_TOI"] = None
+            table["SV%_TOI"] = None
         else:
+            table["GA_TOI"] = None
+            table["SV_TOI"] = None
+            table["SV%_TOI"] = None
             table["G"] = None
             table["A"] = None
             table["SOG"] = None
             table["BLK"] = None
             table["HIT"] = None
-        table = table[["Name", "Date", "G", "A", "SOG", "BLK", "HIT", "GA", "SV", "SV%", "TOI"]]
+            table["G_TOI"] = None
+            table["A_TOI"] = None
+            table["SOG_TOI"] = None
+            table["BLK_TOI"] = None
+            table["HIT_TOI"] = None
+        table = table[["Name", "Position", "G_TOI", "A_TOI", "SOG_TOI", "BLK_TOI", "HIT_TOI", "GA_TOI", "SV_TOI", "SV%_TOI", "TOI"]]
         return table
 
-    # Fetch Odds from Sportsbook
-    def fetch_odds(self, odds_key):
+    # Fetch Games/Odds from Sportsbook
+    def fetch_games(self, odds_key):
         games = []
         sport='icehockey_nhl'    
         regions = 'us'
@@ -136,7 +171,7 @@ class DataManagement():
         return games
 
     # Convert string TOI to float minutes
-    def toi_to_minutes(toi):
+    def toi_to_minutes(self, toi):
         min, sec = toi.split(":")
         real_toi = float(min) + float(sec)/60
         return real_toi
