@@ -18,7 +18,7 @@ class DataManagement():
     def get_driver(self):
         # Driver options
         cache_manager=DriverCacheManager("./driver")
-        driver = ChromeDriverManager(cache_manager=cache_manager).install()
+        # driver = ChromeDriverManager(cache_manager=cache_manager).install()
         options = webdriver.ChromeOptions()
         options.add_argument("--headless")
         options.add_argument("--no-sandbox")
@@ -101,11 +101,14 @@ class DataManagement():
             f"//div[@id='div_last5']/table"
         )
         table=pd.read_html(htmlsource.get_attribute('outerHTML'))[0]
-        table.columns = [ii[1] for ii in table.columns.tolist()]
+        if position != 'G': table.columns = [ii[1] for ii in table.columns.tolist()]
+        else: table.columns = table.columns.tolist()
+
+        # Part 4: Parse Data
         table["Name"] = player.title()
         table["Position"] = position
         table["TOI"] = table.apply(lambda x: self.toi_to_minutes(x["TOI"]), axis=1)
-        if position is not "G":
+        if position != "G":
             table["G_TOI"] = table.apply(lambda x: x["G"]/x["TOI"], axis=1)
             table["A_TOI"] = table.apply(lambda x: x["A"]/x["TOI"], axis=1)
             table["SOG_TOI"] = table.apply(lambda x: x["SOG"]/x["TOI"], axis=1)
@@ -118,9 +121,9 @@ class DataManagement():
             table["SV_TOI"] = None
             table["SV%_TOI"] = None
         else:
-            table["GA_TOI"] = None
-            table["SV_TOI"] = None
-            table["SV%_TOI"] = None
+            table["GA_TOI"] = table.apply(lambda x: x["GA"]/x["TOI"], axis=1)
+            table["SV_TOI"] = table.apply(lambda x: x["SV"]/x["TOI"], axis=1)
+            table["SV%_TOI"] = table.apply(lambda x: x["SV%"]/x["TOI"], axis=1)
             table["G"] = None
             table["A"] = None
             table["SOG"] = None
